@@ -54,12 +54,21 @@ public class CatalogService {
         return mapToProductCatalogResponse(product);
     }
 
+    // --- BÚSQUEDA POR SLUG ---
+    @Transactional(readOnly = true)
+    public ProductCatalogResponse getProductBySlug(String slug) {
+        Product product = productRepository.findBySlug(slug)
+                .orElseThrow(() -> new EntityNotFoundException("Producto no encontrado con el slug: " + slug));
+        return mapToProductCatalogResponse(product);
+    }
+
     @Transactional
     public ProductCatalogResponse createProduct(ProductCatalogRequest request) {
         Category category = null;
         if (request.categoryId() != null) {
             category = categoryRepository.findById(request.categoryId())
-                    .orElseThrow(() -> new RuntimeException("Categoría no encontrada con ID: " + request.categoryId()));
+                    //.orElseThrow(() -> new RuntimeException("Categoría no encontrada con ID: " + request.categoryId()));
+                    .orElseThrow(() -> new EntityNotFoundException("Categoría no encontrada con ID: " + request.categoryId()));
         }
 
         Product product = Product.builder()
@@ -71,6 +80,7 @@ public class CatalogService {
                 .imageUrl(request.imageUrls() != null && !request.imageUrls().isEmpty()
                         ? request.imageUrls().get(0)
                         : null)
+                .isActive(true)
                 .build();
 
         Product savedProduct = productRepository.save(product);
@@ -80,7 +90,8 @@ public class CatalogService {
     @Transactional
     public ProductCatalogResponse updateProduct(Long id, ProductCatalogRequest request) {
         Product product = productRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Producto no encontrado con ID: " + id));
+                //.orElseThrow(() -> new RuntimeException("Producto no encontrado con ID: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Producto no encontrado con ID: " + id));
 
         if (request.categoryId() != null) {
             Category category = categoryRepository.findById(request.categoryId())
@@ -144,6 +155,7 @@ public class CatalogService {
                 product.getId(),
                 product.getName(),
                 product.getDescription(),
+                product.getSlug(),
                 product.getPrice(),
                 product.getStock(),
                 categoryService.mapToCategoryResponse(product.getCategory()),

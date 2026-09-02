@@ -2,6 +2,7 @@ package com.ecommercefesti.ecommerce_backend.controller;
 
 import com.ecommercefesti.ecommerce_backend.dto.CategoryRequest;
 import com.ecommercefesti.ecommerce_backend.dto.CategoryResponse;
+import com.ecommercefesti.ecommerce_backend.dto.CategoryTreeResponse;
 import com.ecommercefesti.ecommerce_backend.service.CategoryService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -19,10 +20,10 @@ public class CategoryController {
 
     private final CategoryService categoryService;
 
-    @GetMapping
-    public ResponseEntity<List<CategoryResponse>> getAllCategories() {
-        return ResponseEntity.ok(categoryService.getAllCategories());
-    }
+//    @GetMapping
+//    public ResponseEntity<List<CategoryResponse>> getAllCategories() {
+//        return ResponseEntity.ok(categoryService.getAllCategories());
+//    }
 
     @GetMapping("/{id}")
     public ResponseEntity<CategoryResponse> getCategoryById(@PathVariable Long id) {
@@ -32,6 +33,11 @@ public class CategoryController {
     @GetMapping("/slug/{slug}")
     public ResponseEntity<CategoryResponse> getCategoryBySlug(@PathVariable String slug) {
         return ResponseEntity.ok(categoryService.getCategoryBySlug(slug));
+    }
+
+    @GetMapping
+    public ResponseEntity<List<CategoryTreeResponse>> getCategories() {
+        return ResponseEntity.ok(categoryService.getCategoryTree());
     }
 
     @PostMapping

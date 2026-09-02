@@ -1,5 +1,6 @@
 package com.ecommercefesti.ecommerce_backend.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 import java.util.regex.Pattern;
@@ -29,7 +30,19 @@ public class Category {
 
     private String description;
 
-    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL)
+    // Relación a la categoría Padre
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_id")
+    @JsonIgnoreProperties({"subcategories", "parent"})
+    private Category parent;
+
+    // Relación a las Subcategorías Hijas
+    @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL)
+    @JsonIgnoreProperties("parent")
+    private List<Category> subcategories;
+
+    @OneToMany(mappedBy = "category")
+    @JsonIgnoreProperties("category") // Evita que los productos dentro de la categoría vuelvan a serializar la categoría
     private List<Product> products;
 
     @PrePersist

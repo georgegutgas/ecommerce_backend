@@ -4,6 +4,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -28,11 +29,15 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+                .cors(Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable) // Desactiva CSRF para facilitar pruebas de API REST
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/v1/auth/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/v1/products/**").permitAll() // Público
+                        // Permitir peticiones GET públicas a productos y categorías
+                        .requestMatchers(HttpMethod.GET, "/api/v1/products/**","/api/v1/catalog/products/**", "/api/v1/categories/**").permitAll()
+                        //.requestMatchers(HttpMethod.GET, "/api/v1/products/**").permitAll() // Público
                         .requestMatchers("/api/v1/orders/**").authenticated() // Exige login con JWT para crear y consultar pedidos
+                        .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll() // Permite Preflight sin Body
                         //.requestMatchers("/api/v1/admin/**").hasAuthority("ROLE_ADMIN")       // Solo Administrador
                         .anyRequest().authenticated()
                 )

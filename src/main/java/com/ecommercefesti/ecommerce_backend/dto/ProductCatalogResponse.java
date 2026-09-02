@@ -7,6 +7,7 @@ public record ProductCatalogResponse(
         Long id,
         String name,
         String description,
+        String slug,
         BigDecimal price,
         Integer stock,
         CategoryResponse category,

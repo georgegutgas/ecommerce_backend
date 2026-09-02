@@ -52,6 +52,12 @@ public class CatalogController {
         return ResponseEntity.ok(catalogService.getProductById(id));
     }
 
+    // GET por Slug (Público)
+    @GetMapping("/products/slug/{slug}")
+    public ResponseEntity<ProductCatalogResponse> getProductBySlug(@PathVariable String slug) {
+        return ResponseEntity.ok(catalogService.getProductBySlug(slug));
+    }
+
     @PostMapping("/products")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ProductCatalogResponse> createProduct(@Valid @RequestBody ProductCatalogRequest request) {

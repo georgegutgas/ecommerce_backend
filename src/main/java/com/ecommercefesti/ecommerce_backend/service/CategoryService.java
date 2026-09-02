@@ -2,6 +2,8 @@ package com.ecommercefesti.ecommerce_backend.service;
 
 import com.ecommercefesti.ecommerce_backend.dto.CategoryRequest;
 import com.ecommercefesti.ecommerce_backend.dto.CategoryResponse;
+import com.ecommercefesti.ecommerce_backend.dto.CategoryTreeResponse;
+import com.ecommercefesti.ecommerce_backend.dto.SubcategoryResponse;
 import com.ecommercefesti.ecommerce_backend.entity.Category;
 import com.ecommercefesti.ecommerce_backend.repository.CategoryRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -36,6 +38,24 @@ public class CategoryService {
         Category category = categoryRepository.findBySlug(slug)
                 .orElseThrow(() -> new EntityNotFoundException("Categoría no encontrada con slug: " + slug));
         return mapToCategoryResponse(category);
+    }
+
+    @Transactional(readOnly = true)
+    public List<CategoryTreeResponse> getCategoryTree() {
+        // 1. Obtenemos solo las categorías principales (parent IS NULL)
+        List<Category> rootCategories = categoryRepository.findRootCategoriesWithSubcategories();
+
+        // 2. Mapeamos a la estructura del DTO
+        return rootCategories.stream().map(parent -> new CategoryTreeResponse(
+                parent.getId(),
+                parent.getName(),
+                parent.getSlug(),
+                parent.getSubcategories().stream().map(sub -> new SubcategoryResponse(
+                        sub.getId(),
+                        sub.getName(),
+                        sub.getSlug()
+                )).toList()
+        )).toList();
     }
 
     @Transactional

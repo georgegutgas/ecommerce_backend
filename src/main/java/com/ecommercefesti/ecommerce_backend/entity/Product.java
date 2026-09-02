@@ -1,5 +1,6 @@
 package com.ecommercefesti.ecommerce_backend.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
@@ -33,8 +34,9 @@ public class Product {
     @Column(nullable = false)
     private Integer stock;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "category_id")
+    @JsonIgnoreProperties("products") // Evita que la categoría vuelva a serializar la lista de productos
     private Category category;
 
     @Column(name = "image_url", columnDefinition = "TEXT")
@@ -48,7 +50,25 @@ public class Product {
     private ZonedDateTime createdAt;
 
     @PrePersist
-    protected void onCreate() {
-        this.createdAt = ZonedDateTime.now();
+    @PreUpdate
+    public void generateSlugAndDates() {
+        if (this.createdAt == null) {
+            this.createdAt = ZonedDateTime.now();
+        }
+        if (this.name != null) {
+            this.slug = toSlug(this.name);
+        }
+    }
+
+    private String toSlug(String input) {
+        if (input == null) return "";
+        java.text.Normalizer.Form form = java.text.Normalizer.Form.NFD;
+        String normalized = java.text.Normalizer.normalize(input, form);
+        java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
+        return pattern.matcher(normalized)
+                .replaceAll("")
+                .toLowerCase(java.util.Locale.ENGLISH)
+                .replaceAll("[^a-z0-9\\s-]", "")
+                .replaceAll("\\s+", "-");
     }
 }
